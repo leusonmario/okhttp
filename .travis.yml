@@ -1,31 +1,28 @@
+
+sudo: required
 language: java
 
 jdk:
   - oraclejdk7
   - oraclejdk8
 
-after_success:
-  - .buildscript/deploy_snapshot.sh
 
-env:
-  global:
-    - secure: "S0BTJVrF4fUCwhTdmoQY6LYr5r1wgXZ/p8lc5bIgUUsc1Ckalwt7s/GDwPuLJ4702sI5t56Eye2iEIMUjeFJKqebZRsX1C5oYsYFxGi3BGlepstYpmj0gLXuSWqCLniS9zmHXCxLhLkC6KxPVjhDlbq76XQx0o3K1J8oEIj/PCE="
-    - secure: "awV7yLXURjlPbTOladsNDZk74KYCNXoiZpAP0gQFfK4Sc0fc7+kg8z/yhdWXeTxjsIZ6m0dVDHTqnH8ytnydwXpBam8JdQJ+EAWA6R3Svq1BR1bzl/PcZUoz+Xn8lMXdU3yA1p4qtQlUhMxwsE3MOVe24HSDJPAu4XeWFj1j3qo="
 
-branches:
-  except:
-    - gh-pages
+script:
+  - mvn clean cobertura:cobertura -Dtest=WaitUntilNotifiedTest#notified -DfailIfNoTests=false
 
-notifications:
-  email: false
+before_deploy:
+- tar -zcvf coverage-result.tar.gz /home/travis/build/leusonmario/okhttp/target/site/cobertura
 
-sudo: false
+deploy:
+  provider: releases
+  api_key:
+    secure: "hKZKNYyL2/bT00Br87qFKh3NYlRyKlxUEwmZklUJF76WOE8cdb8HUQfixY0I65ll8I7kRMq1JJG8VcZU6IBBoq6nKEYHsLgkqyhWfOskJVp8EUNUCLWtXpJ3XmnmCzOvhN8zvqurMricRFayWDvDWvSOlcJMB+2drgDlFWZowvIKv69rhpkgEIpLYFYHcLExDJ1pK+mtPGbpw2JuMj747aP0cbcDzkkCEz4Qk6hwVFhpwewa/FtrFq501vWAmpBBC860gVqUi6zZyp8GgvNfECiHCs1xvS7AAEqjRP4w8SwCrY4cmwr/1lqc8axzO5colPvTJjQ26UjjA+C6pVYKGL6WpzfaHceXedn91R9S/BCn2f3OGADkJkW6RTb0E+Ssgoq4fRnUHc8n4yhdQNOArWcqB+oYiw4Dd1ZtGfKuGp1I3MmPgyj0rQSD+unnUQ9yzWLIqiiciieeQgoO7O6BMwo7DzG1dKDW5ACdyGDj3r/Ku/Fo1fihgvRAoplvxhOovR9k7nMDrCaq9b6m8iwj3a4AZCBl77NWXxdUxU5ACQWDM7bmifKrdYTkWc8kw7GSMt85rcn1Rf6h2KRxOX0ajZ5PZW8YYkCZYri5o+Qp4xSDz8TYfPspSSdv96VjWz/V6xvJXNSI63OKyhUdoNgpnwqvzsuJS5KC2yhYFeikBLs="
 
-cache:
-  directories:
-    - $HOME/.m2
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+  file: coverage-result.tar.gz
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
