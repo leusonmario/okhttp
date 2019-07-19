@@ -1,26 +1,28 @@
+
+sudo: required
 language: java
 
 jdk:
   - oraclejdk7
   - oraclejdk8
 
-after_success:
-  - .buildscript/deploy_snapshot.sh
 
-env:
-  global:
-    - secure: "S0BTJVrF4fUCwhTdmoQY6LYr5r1wgXZ/p8lc5bIgUUsc1Ckalwt7s/GDwPuLJ4702sI5t56Eye2iEIMUjeFJKqebZRsX1C5oYsYFxGi3BGlepstYpmj0gLXuSWqCLniS9zmHXCxLhLkC6KxPVjhDlbq76XQx0o3K1J8oEIj/PCE="
-    - secure: "awV7yLXURjlPbTOladsNDZk74KYCNXoiZpAP0gQFfK4Sc0fc7+kg8z/yhdWXeTxjsIZ6m0dVDHTqnH8ytnydwXpBam8JdQJ+EAWA6R3Svq1BR1bzl/PcZUoz+Xn8lMXdU3yA1p4qtQlUhMxwsE3MOVe24HSDJPAu4XeWFj1j3qo="
 
-branches:
-  except:
-    - gh-pages
+script:
+  - mvn clean cobertura:cobertura -Dtest=URLConnectionTest#serverShutdownOutput -DfailIfNoTests=false
 
-notifications:
-  email: false
+before_deploy:
+- tar -zcvf coverage-result.tar.gz /home/travis/build/leusonmario/okhttp/target/site/cobertura
 
-sudo: false
+deploy:
+  provider: releases
+  api_key:
+    secure: "jk+nk8etycaCQqHaxe17e+qihrI/+K+TKxiBO3KpcOcAMQnBbcAuyUWNL1gGspbw8urUImfCDbK/ljmGEBf+Lg0Xhhm9dyPSCCz9hkDdBBlou2QPcDdSvdBUZfePewfpIWmX2FGa81cAN9SgPg5ZCgi0/7YPjQui10rujOVlf7TgRpdJUeMSNMPTEZaHX18YTc46shGOroFmQYMycCb/jP0kud0Y6E/3RvVx5ZB49EHuVHu1wsRsADE58zNYRHghK/kT7cWUsVBInbO05iPsI98wheBZIDRbnLWFLP47bmBIzqqySloy1wa1x1XzpSEXHRdOXQt2F9XF4+lh5ZIb0G/b/wgtS0P/GlkTL0ZYHsHpbF/9yJUIXKrH99Rs1ekxtNCDPTtJ7Cye/afkru4rDuWYEufPrBtGd6HX6JbUdYDM3r+N6sd5ycxothy8DfS0sZ579uI/i76YJv03ZTqixeAMT5gd2Ta96NhS69ydDyCABmbHL4BS17ADectNGKje41L14HBgWJkaMhI9+zlbN5KO9o4OjrFm2xVa/dwqkckdL14U6Dofw9Npn0ieeBLJQov0scP+WnQ5Koh6Td6fVpBWjUsgiqysUcsj/g1BSW8ogn15Ayo7EGRx68TFVtNPEpKuPtMepT6SnCZiYHURYhjyPqvIKS3HlQTTbrBcq2g="
 
-cache:
-  directories:
-    - $HOME/.m2
+
+  file: coverage-result.tar.gz
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
